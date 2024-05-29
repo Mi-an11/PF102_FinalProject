@@ -1,0 +1,516 @@
+import com.toedter.calendar.JCalendar;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+class Ticket {
+    private String name;
+    private String from;
+    private String destination;
+    private String passengers;
+    private Date date;
+    private String time;
+    private int amount;
+
+    public Ticket(String name, String from, String destination, String passengers, Date date, String time, int amount) {
+        this.name = name;
+        this.from = from;
+        this.destination = destination;
+        this.passengers = passengers;
+        this.date = date;
+        this.time = time;
+        this.amount = amount;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public String getDestination() {
+        return destination;
+    }
+
+    public String getPassengers() {
+        return passengers;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+}
+
+class TicketDataModel {
+    private List<Ticket> tickets = new ArrayList<>();
+
+    public void addTicket(Ticket ticket) {
+        tickets.add(ticket);
+    }
+
+    public List<Ticket> getTickets() {
+        return tickets;
+    }
+}
+
+class SmartBusTicketingSystem extends JFrame {
+    private JTextField nameField;
+    private JComboBox<String> fromComboBox;
+    private JComboBox<String> destinationComboBox;
+    private JTextField numberOfPassengersField;
+    private JSpinner timeSpinner;
+    private JCalendar calendar;
+    private JTextArea ticketSummaryArea;
+    private JTextField payableAmountField;
+    private JButton submitButton;
+    private JButton resetButton;
+    private JButton printButton;
+    private JButton exitButton;
+    private TicketDataModel ticketDataModel;
+
+    public SmartBusTicketingSystem(TicketDataModel ticketDataModel) {
+        this.ticketDataModel = ticketDataModel;
+        initComponents();
+        layoutComponents();
+        addEventHandlers();
+        setTitle("SmartBus Ticketing System");
+        setSize(800, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    private void initComponents() {
+        nameField = new JTextField(20);
+        fromComboBox = new JComboBox<>(new String[]{"San Jose"});
+        destinationComboBox = new JComboBox<>(new String[]{"Libertad", "Pandan", "Sebaste", "Culasi", "Tibiao", "Barbaza", "Laua-an", "Bugasong", "Valderama", "Patnongon", "San Remigio", "Belison", "Sibalom", "Hamtic", "Tobias Fornier", "Anini-y"});
+        numberOfPassengersField = new JTextField(5);
+
+        timeSpinner = new JSpinner(new SpinnerDateModel());
+        JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(timeSpinner, "hh:mm a");
+        timeSpinner.setEditor(timeEditor);
+        timeSpinner.setValue(new java.util.Date());
+
+        calendar = new JCalendar();
+        ticketSummaryArea = new JTextArea(15, 30);
+        payableAmountField = new JTextField(10);
+
+        submitButton = new JButton("Submit");
+        resetButton = new JButton("Reset");
+        printButton = new JButton("Print");
+        exitButton = new JButton("Exit");
+    }
+
+    private void layoutComponents() {
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Title
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 4;
+        JLabel titleLabel = new JLabel("Welcome to SmartBus Ticketing System", JLabel.CENTER);
+        titleLabel.setFont(new Font("Serif", Font.BOLD, 20));
+        add(titleLabel, gbc);
+        gbc.gridwidth = 1;
+
+        // Layout components
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(new JLabel("Name of Passenger"), gbc);
+        gbc.gridx = 1;
+        add(nameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(new JLabel("From"), gbc);
+        gbc.gridx = 1;
+        add(fromComboBox, gbc);
+
+        gbc.gridx = 2;
+        add(new JLabel("Destination"), gbc);
+        gbc.gridx = 3;
+        add(destinationComboBox, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        add(new JLabel("No. of Passengers"), gbc);
+        gbc.gridx = 1;
+        add(numberOfPassengersField, gbc);
+
+        gbc.gridx = 2;
+        add(new JLabel("Time"), gbc);
+        gbc.gridx = 3;
+        add(timeSpinner, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        add(new JLabel("Departure Date"), gbc);
+        gbc.gridx = 1;
+        gbc.gridwidth = 3;
+        add(calendar, gbc);
+        gbc.gridwidth = 1;
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 4;
+        add(new JLabel("Ticket Summary"), gbc);
+        gbc.gridy = 6;
+        ticketSummaryArea.setPreferredSize(new Dimension(400, 300));
+        add(new JScrollPane(ticketSummaryArea), gbc);
+        gbc.gridwidth = 1;
+
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        add(new JLabel("Payable Amount"), gbc);
+        gbc.gridx = 1;
+        add(payableAmountField, gbc);
+
+        // Buttons
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(submitButton);
+        buttonPanel.add(resetButton);
+        buttonPanel.add(printButton);
+        buttonPanel.add(exitButton);
+
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.gridwidth = 4;
+        add(buttonPanel, gbc);
+    }
+
+    private void addEventHandlers() {
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                submitAction();
+            }
+        });
+
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetAction();
+            }
+        });
+
+        printButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                printAction();
+            }
+        });
+
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exitAction();
+            }
+        });
+    }
+
+    private void submitAction() {
+        String name = nameField.getText();
+        String from = (String) fromComboBox.getSelectedItem();
+        String destination = (String) destinationComboBox.getSelectedItem();
+        String passengers = numberOfPassengersField.getText();
+        Date date = calendar.getDate();
+        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a");
+        String time = timeFormat.format(timeSpinner.getValue());
+        // Calculate the payable amount (dummy calculation)
+        int fare = DESTINATION_FARES.get(destination);
+        int amount = Integer.parseInt(passengers) * fare;
+
+        ticketSummaryArea.setText("Name: " + name + "\nFrom: " + from + "\nDestination: " + destination +
+                "\nPassengers: " + passengers + "\nDate: " + date.toString() + "\nTime: " + time +
+                "\nAmount: $" + amount);
+
+        payableAmountField.setText("" + amount);
+
+        // Add ticket to the shared data model
+        Ticket ticket = new Ticket(name, from, destination, passengers, date, time, amount);
+        ticketDataModel.addTicket(ticket);
+    }
+
+    private void resetAction() {
+        nameField.setText("");
+        fromComboBox.setSelectedIndex(0);
+        destinationComboBox.setSelectedIndex(0);
+        numberOfPassengersField.setText("");
+        calendar.setDate(new Date());
+        timeSpinner.setValue(new Date());
+        ticketSummaryArea.setText("");
+        payableAmountField.setText("");
+    }
+
+    private void printAction() {
+        try {
+            ticketSummaryArea.print();
+            resetAction();  // Call resetAction() after printing
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Unable to print: " + e.getMessage());
+        }
+    }
+
+    private void exitAction() {
+        new LandingPage(ticketDataModel).setVisible(true);
+        dispose(); // Close the current window
+    }
+
+    private static final HashMap<String, Integer> DESTINATION_FARES = new HashMap<>();
+
+    static {
+        DESTINATION_FARES.put("Libertad", 25);
+        DESTINATION_FARES.put("Pandan", 50);
+        DESTINATION_FARES.put("Sebaste", 75);
+        DESTINATION_FARES.put("Culasi", 100);
+        DESTINATION_FARES.put("Tibiao", 125);
+        DESTINATION_FARES.put("Barbaza", 150);
+        DESTINATION_FARES.put("Laua-an", 175);
+        DESTINATION_FARES.put("Bugasong", 200);
+        DESTINATION_FARES.put("Valderama", 225);
+        DESTINATION_FARES.put("Patnongon", 250);
+        DESTINATION_FARES.put("San Remigio", 275);
+        DESTINATION_FARES.put("Belison", 300);
+        DESTINATION_FARES.put("Sibalom", 325);
+        DESTINATION_FARES.put("Hamtic", 350);
+        DESTINATION_FARES.put("Tobias Fornier", 375);
+        DESTINATION_FARES.put("Anini-y", 400);
+    }
+}
+
+class AdminFrame extends JFrame {
+    private DefaultTableModel tableModel;
+    private JTable dataTable;
+    private JButton deleteButton;
+    private JButton exitButton;
+
+    public AdminFrame(TicketDataModel ticketDataModel) {
+        setTitle("Admin Panel");
+        setSize(600, 400);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        tableModel = new DefaultTableModel();
+        dataTable = new JTable(tableModel);
+        tableModel.addColumn("Name");
+        tableModel.addColumn("From");
+        tableModel.addColumn("Destination");
+        tableModel.addColumn("Passengers");
+        tableModel.addColumn("Date");
+        tableModel.addColumn("Time");
+        tableModel.addColumn("Amount");
+
+        add(new JScrollPane(dataTable), BorderLayout.CENTER);
+
+        // Add delete and exit buttons
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        deleteButton = new JButton("Delete");
+        exitButton = new JButton("Exit");
+        bottomPanel.add(deleteButton);
+        bottomPanel.add(exitButton);
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteSelectedRow();
+            }
+        });
+
+
+
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exitAction();
+            }
+        });
+
+        // Load tickets from the shared model
+        for (Ticket ticket : ticketDataModel.getTickets()) {
+            addTicketToTable(ticket);
+        }
+    }
+
+    public void addTicketToTable(Ticket ticket) {
+        // Format date
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = dateFormat.format(ticket.getDate());
+
+        // Add ticket to table
+        Object[] rowData = {ticket.getName(), ticket.getFrom(), ticket.getDestination(), ticket.getPassengers(), formattedDate, ticket.getTime(), "$" + ticket.getAmount()};
+        tableModel.addRow(rowData);
+    }
+
+    private void deleteSelectedRow() {
+        int selectedRow = dataTable.getSelectedRow();
+        if (selectedRow != -1) {
+            tableModel.removeRow(selectedRow);
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a row to delete.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void exitAction() {
+        new LandingPage(new TicketDataModel()).setVisible(true);
+        dispose(); // Close the admin panel
+    }
+}
+
+
+class LandingPage extends JFrame {
+    private JButton passengerButton;
+    private JButton adminButton;
+    private TicketDataModel ticketDataModel;
+
+    public LandingPage(TicketDataModel ticketDataModel) {
+        this.ticketDataModel = ticketDataModel;
+        setTitle("SmartBus System");
+        setSize(300, 200);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+
+        JLabel titleLabel = new JLabel("Welcome to SmartBus System", JLabel.CENTER);
+        titleLabel.setFont(new Font("Serif", Font.BOLD, 16));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        add(titleLabel, gbc);
+        gbc.gridwidth = 1;
+
+        passengerButton = new JButton("Passenger");
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(passengerButton, gbc);
+
+        adminButton = new JButton("Admin");
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        add(adminButton, gbc);
+
+        passengerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new SmartBusTicketingSystem(ticketDataModel).setVisible(true);
+                dispose();
+            }
+        });
+
+        adminButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showAdminLogin();
+            }
+        });
+    }
+
+    private void showAdminLogin() {
+        AdminLoginDialog adminLoginDialog = new AdminLoginDialog(this, ticketDataModel);
+        adminLoginDialog.setVisible(true);
+        dispose(); // Close the landing page after showing the admin login dialog
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                TicketDataModel ticketDataModel = new TicketDataModel();
+                new LandingPage(ticketDataModel).setVisible(true);
+            }
+        });
+    }
+}
+
+class AdminLoginDialog extends JDialog {
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+    private JButton loginButton;
+    private JButton cancelButton;
+    private TicketDataModel ticketDataModel;
+
+    public AdminLoginDialog(Frame parent, TicketDataModel ticketDataModel) {
+        super(parent, "Admin Login", true);
+        this.ticketDataModel = ticketDataModel;
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(new JLabel("Username: "), gbc);
+
+        usernameField = new JTextField(15);
+        gbc.gridx = 1;
+        add(usernameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(new JLabel("Password: "), gbc);
+
+        passwordField = new JPasswordField(15);
+        gbc.gridx = 1;
+        add(passwordField, gbc);
+
+        loginButton = new JButton("Login");
+        cancelButton = new JButton("Cancel");
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(loginButton);
+        buttonPanel.add(cancelButton);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        add(buttonPanel, gbc);
+
+        loginButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                login();
+            }
+        });
+
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
+
+        pack();
+        setLocationRelativeTo(parent);
+    }
+
+    private void login() {
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword());
+
+        // Check credentials (dummy check for demonstration)
+        if ("admin".equals(username) && "password".equals(password)) {
+            new AdminFrame(ticketDataModel).setVisible(true);
+            dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "Invalid username or password.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
