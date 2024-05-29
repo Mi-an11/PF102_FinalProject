@@ -317,7 +317,7 @@ class AdminFrame extends JFrame {
         tableModel.addColumn("Passengers");
         tableModel.addColumn("Date");
         tableModel.addColumn("Time");
-        tableModel.addColumn("Amount");
+        tableModel.addColumn("Fare Amount");
 
         add(new JScrollPane(dataTable), BorderLayout.CENTER);
 
